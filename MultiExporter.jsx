@@ -6,7 +6,7 @@
 //
 // Exports Illustrator artboards and/or layers as individual PNG or PDF files.
 // 
-// Copyright 2011 Matthew Ericson
+// Copyright 2011-12 Matthew Ericson
 // Comments or suggestions to mericson@ericson.net
 
 
