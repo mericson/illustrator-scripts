@@ -4,7 +4,7 @@
 // Version 0.2 Adds PNG and EPS exports
 // Version 0.3 Adds support for exporting at different resolutions
 //
-// Exports Illustrator artboards and/or layers as individual PNG or PDF files
+// Exports Illustrator artboards and/or layers as individual PNG or PDF files.
 // 
 // Copyright 2011 Matthew Ericson
 // Comments or suggestions to mericson@ericson.net
