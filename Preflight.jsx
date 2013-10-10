@@ -4,9 +4,6 @@
 // uncomment to suppress Illustrator warning dialogs
 // app.userInteractionLevel = UserInteractionLevel.DONTDISPLAYALERTS;
 
-// Set destination path for the file with a summary of problems
-var resultsFilePath  = "~/IllustratorErrorInfo.txt";
-
 // Turn debugging mesages on or off
 var debugThisScript = false;
 var xdebugThisScript = false;
@@ -41,6 +38,8 @@ if ( theDoc.documentColorSpace == DocumentColorSpace.CMYK ) {
 	debugln( "Document color space is RGB." )
 	badColorMode = 1;
 }
+
+var dlg;
 
 
 // Loop thru all text frames in document	
@@ -215,27 +214,22 @@ for ( var i = 0; i < theDoc.textFrames.length; i ++ ) {
 
 var numProblems = badColorMode + badBlackType.length + badOverprintType.length + badFillColorType.length;
 
+var resultsMsg = "";
 
 if ( numProblems > 0 ) {
 
 
-	var alertMsg = "Found " + numProblems + " problems with the document"; 
-
-	resultsFile = new File( resultsFilePath );
-	resultsFile.open( "w", "TEXT", "TEXT" );
-	
-	resultsFile.writeln ( "Summary of problems found in \"" + theDoc.name + "\"" );
-	resultsFile.writeln ( '' );
+	resultsMsg +=  "Summary of problems found in \"" + theDoc.name + "\"\n";
+	resultsMsg +=  '\n';
 
 	if ( badColorMode ) {
-		//alert( "Your document is in RGB color mode. You must change it to CMYK and run this again." );
 	
 		alertMsg += "\nYour document is in RGB color mode. Change it to CMYK.\n"
 	
-		resultsFile.writeln ( 'BAD DOCUMENT COLOR MODE' );
-		resultsFile.writeln ( '====================================================================' );
-		resultsFile.writeln ( "Your document is RGB color mode. You must change it to CMYK." );
-		resultsFile.writeln ( '' );
+		resultsMsg +=  'BAD DOCUMENT COLOR MODE\n';
+		resultsMsg +=  '====================================================================\n';
+		resultsMsg +=  "Your document is RGB color mode. You must change it to CMYK.\n";
+		resultsMsg +=  '\n';
 	}
 
 	if ( badBlackType.length  ) {
@@ -243,9 +237,8 @@ if ( numProblems > 0 ) {
 	
 		alertMsg += "\nYour document has " +  badBlackType.length + " pieces of 4-color black type." 
 		
-		
-		resultsFile.writeln ( 'POSSIBLE 4-COLOR BLACK TYPE' );
-		resultsFile.writeln ( '====================================================================' );
+		resultsMsg +=  'POSSIBLE 4-COLOR BLACK TYPE\n';
+		resultsMsg +=  '================================================\n';
 
 		for ( var i=0; i<badBlackType.length; i++ ) {
 			debugln("");
@@ -254,10 +247,10 @@ if ( numProblems > 0 ) {
 			debugln( badBlackType[i].contents );
 			debugln( badBlackType[i].cmyk );
 			
-			resultsFile.writeln( badBlackType[i].contents  );
+			resultsMsg += badBlackType[i].contents + "\n";
 			
 		}
-		resultsFile.writeln ( '' );
+		resultsMsg +=  '\n';
 	}
 	
 	
@@ -269,9 +262,9 @@ if ( numProblems > 0 ) {
 		alertMsg += "\nYour document has " +  badFillColorType.length + " pieces of type with invalid CMYK specs." 
 		
 		
-		resultsFile.writeln ( 'POSSIBLE TYPE WITH INVALID CMYK SPECS' );
-		resultsFile.writeln ( '(It might be OK, but check each piece by hand, please)' );
-		resultsFile.writeln ( '====================================================================' );
+		resultsMsg +=  'POSSIBLE TYPE WITH INVALID CMYK SPECS\n';
+		resultsMsg +=  '(It might be OK, but check each piece by hand, please)\n';
+		resultsMsg +=  '================================================\n';
 
 		for ( var i=0; i<badFillColorType.length; i++ ) {
 			debugln("");
@@ -280,23 +273,18 @@ if ( numProblems > 0 ) {
 			debugln( badFillColorType[i].contents );
 			debugln( badFillColorType[i].cmyk );
 			
-			resultsFile.writeln( badFillColorType[i].contents  );
+			resultsMsg += badFillColorType[i].contents + "\n";
 			
 		}
-		resultsFile.writeln ( '' );
+		resultsMsg +=  '\n';
 	}
-	
-	
-	
-	
-	
 
 	if ( badOverprintType.length  ) {
 	
 		alertMsg += "\nYour document has " +  badOverprintType.length + " pieces of overprinting white type." 
 
-		resultsFile.writeln ( 'POSSIBLE OVERPRINTING WHITE TYPE' );
-		resultsFile.writeln ( '====================================================================' );
+		resultsMsg +=  'POSSIBLE OVERPRINTING WHITE TYPE\n';
+		resultsMsg +=  '================================================\n';
 
 		for ( var i=0; i<badOverprintType.length; i++ ) {
 
@@ -305,31 +293,40 @@ if ( numProblems > 0 ) {
 			debugln("Overprinting white type")
 			debugln( badOverprintType[i].contents );
 
-			resultsFile.writeln( badOverprintType[i].contents  );
+			resultsMsg += badOverprintType[i].contents + "\n";
 		}
-		resultsFile.writeln( '' );
-	}
-	
-	resultsFile.close();
-	
-
-	alertMsg += "\n\nDo you want to view the full report of the problems?"
-
-	if ( confirm ( alertMsg ) ) {
-		resultsFile.execute();
+		resultsMsg += '\n';
 	}
 	
 	
-	
-	
-	
-	
+
 } else {
-	alert( 'Your document appears to be OK.' );
-
+	resultsMsg = 'Your document appears to be OK.';
 }
 
+displayAlert( resultsMsg );
 
+
+function displayAlert( msg ) {
+	dlg = new Window('dialog', 'Preflight Report'); 
+	
+	var msgPnl = dlg.add('panel', undefined, 'Preflight Report'); 
+	msgPnl.orientation = 'row';
+
+	msgPnl.report = msgPnl.add('edittext', undefined, msg,{multiline:true});
+	msgPnl.report.preferredSize = [600,400];
+
+
+
+
+	var btnPnl = dlg.add('group', undefined, ''); 
+	btnPnl.orientation = 'row'
+	btnPnl.cancelBtn = btnPnl.add('button', undefined, 'Cancel', {name:'cancel'});
+	btnPnl.cancelBtn.onClick = function() { dlg.close() };
+
+	dlg.show();
+}
+ 
 
 app.redraw();
 
